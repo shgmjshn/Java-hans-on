@@ -1,0 +1,41 @@
+name: Build PDF
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/build-pdf.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pandoc + TeX (LuaLaTeX)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc \
+            texlive-luatex texlive-lang-japanese texlive-fonts-recommended \
+            texlive-latex-recommended texlive-latex-extra
+
+      - name: Build PDF
+        run: |
+          mkdir -p pdf
+          pandoc docs/*.md \
+            -o pdf/Java_HandsOn_Complete.pdf \
+            --toc \
+            --toc-depth=2 \
+            --pdf-engine=lualatex \
+            -V documentclass=ltjsarticle \
+            -V geometry:margin=25mm
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Java_HandsOn_Complete
+          path: pdf/Java_HandsOn_Complete.pdf
